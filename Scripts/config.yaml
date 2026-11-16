@@ -1,0 +1,118 @@
+# ============================================================
+# acRIP-seq pipeline configuration
+# Based on the OpenAc4C unified acRIP-seq pipeline:
+#   Trim Galore -> STAR (default) -> exomePeak2
+#   (joint peak calling for replicates, GC correction, P < 1e-10)
+# ============================================================
+# Paths are resolved relative to the pipeline root directory
+# (the parent of Scripts/) unless they are absolute.
+
+# ------------------------------------------------------------
+# sample_pairs
+# ------------------------------------------------------------
+# One entry = one acRIP comparison group used for ONE exomePeak2 call.
+# For biological replicates, list every replicate in ip_samples /
+# input_samples and give the FASTQ files in exactly the same order.
+# exomePeak2 then performs JOINT peak calling across all replicates
+# in the group (bam_ip is a vector), as described in OpenAc4C.
+#
+# Each sample may be single-end (1 FASTQ) or paired-end (R1 + R2).
+# Provide one entry per sample:
+#   - [R1.fq.gz, R2.fq.gz]   -> paired-end (R1 and R2 are both used)
+#   - "single.fq.gz"         -> single-end
+# For large spreadsheets, ip_fastq_r1 / ip_fastq_r2 (and
+# input_fastq_r1 / input_fastq_r2) are also accepted; leave an r2
+# cell empty for single-end samples.
+#
+# A peak-calling group may mix SE and PE samples; exomePeak2 v1.14+
+# handles both. Older exomePeak2 versions expose a global paired_end
+# switch, so keep a group uniform (all PE or all SE) in that case.
+#
+# Legacy single-replicate keys (ip_sample / input_sample /
+# ip_fastq / input_fastq) are still accepted.
+sample_pairs:
+  - pair_name: "acRIP_test"
+    ip_samples:
+      - "acRIP-ip_test1"
+      - "acRIP-ip_test2"
+    input_samples:
+      - "acRIP-input_test1"
+      - "acRIP-input_test2"
+    ip_fastq:
+      - ["Test_Files/acRIP-ip_test1_R1.fastq.gz", "Test_Files/acRIP-ip_test1_R2.fastq.gz"]
+      - "Test_Files/acRIP-ip_test2.fastq.gz"          # single-end example
+    input_fastq:
+      - ["Test_Files/acRIP-input_test1_R1.fastq.gz", "Test_Files/acRIP-input_test1_R2.fastq.gz"]
+      - ["Test_Files/acRIP-input_test2_R1.fastq.gz", "Test_Files/acRIP-input_test2_R2.fastq.gz"]
+
+# ------------------------------------------------------------
+# Output
+# ------------------------------------------------------------
+outputdir: "./result"
+
+# ------------------------------------------------------------
+# Reference
+# ------------------------------------------------------------
+# STAR index prefix directory (built with the same GTF)
+referencedir: "References/hg38_chr_star_index"
+# GTF used by exomePeak2 for exon-aware peak calling
+gtf: "References/gencode.v46.annotation.gtf"
+# Genome FASTA used for peak motif sequence extraction (only when motif enabled)
+genome_fasta: "References/GRCh38.p14.genome.fa"
+
+# ------------------------------------------------------------
+# Container (reuse the MeRIP-seq container: STAR/Trim Galore/
+# samtools/exomePeak2/MEME are all included)
+# ------------------------------------------------------------
+sif: "Containers/MeRIPseq_hg38_final.sif"
+
+# ------------------------------------------------------------
+# Running parameters
+# ------------------------------------------------------------
+threads: 20
+
+# UCSC genome name required by exomePeak2 for GC-content correction
+# (e.g. hg38, mm10, hg19, mm9). Set to "" to disable GC correction
+# when no matching BSgenome is available for a non-model species.
+genome: "hg38"
+
+# Library strand protocol: unstrand | 1st_strand | 2nd_strand
+strandness: "unstrand"
+
+# exomePeak2 peak calling (OpenAc4C unified cut-off)
+p_cutoff: 1e-10
+fragment_length: 100
+bin_size: 25
+step_size: 25
+
+# Extra STAR arguments. Empty = STAR default parameters, matching
+# the OpenAc4C methods. Example for unique-only mapping:
+#   star_extra_args: "--outFilterMultimapNmax 1 --outFilterMismatchNmax 3 --outFilterMismatchNoverLmax 0.1"
+star_extra_args: ""
+
+# BAM filtering before duplicate removal.
+# Keep only uniquely mapped reads (MAPQ >= mapq_filter).
+mapq_filter: 255
+# For paired-end data, also require the proper-pair flag (0x2) so that
+# R1/R2 are kept as a pair. Set false to retain discordant/orphan mates.
+require_proper_pair: True
+
+# ------------------------------------------------------------
+# Optional steps
+# ------------------------------------------------------------
+# The OpenAc4C acRIP-seq pipeline does not include motif analysis,
+# and DRACH is an m6A motif (not applicable to ac4C), so it is off.
+skip_peak: False
+skip_motif: True
+
+# Motif settings, only used when skip_motif: False
+scan_motif_pvalue: 0.01
+scan_motif: "References/ac4C.meme"
+
+# Optional genome harmonization of peaks by UCSC liftOver
+# (OpenAc4C maps all peaks to the latest assembly before database
+# integration). Not needed if the reference is already the target
+# assembly. Requires the `liftOver` binary in the container.
+liftover: False
+liftover_chain: ""          # e.g. References/hg19ToHg38.over.chain.gz
+liftover_target_fasta: ""   # e.g. References/GRCh38.p14.genome.fa

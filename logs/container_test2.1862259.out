@@ -1,0 +1,16 @@
+HOST=computg1
+---
+STAR: /mnt/software/STAR-2.7.11a/source/STAR
+samtools: /usr/bin/samtools
+fastqc: /mnt/software/FastQC/fastqc
+trim_galore: /mnt/software/TrimGalore-0.6.10/trim_galore
+Rscript: /usr/bin/Rscript
+python: /usr/local/bin/python
+multiqc: /usr/local/bin/multiqc
+---
+2.7.11a
+samtools 1.13
+Using htslib 1.13+ds
+
+                        Quality-/Adapter-/RRBS-/Speciality-Trimming
+exomePeak2 1.16.2 

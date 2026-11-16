@@ -1,0 +1,6 @@
+INFO:    Starting build...
+INFO:    Verifying bootstrap image Containers/MeRIPseq_hg38_final.sif
+WARNING: integrity: signature not found for object group 1
+WARNING: Bootstrap image could not be verified, but build will continue.
+ERROR:   unpackSIF failed: root filesystem extraction failed: could not extract squashfs data, unsquashfs not found
+FATAL:   While performing build: packer failed to pack: root filesystem extraction failed: could not extract squashfs data, unsquashfs not found

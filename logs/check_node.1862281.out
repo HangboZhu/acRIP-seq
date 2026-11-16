@@ -1,0 +1,6 @@
+computg1
+PATH=/hpcdisk1/apod/shijiachen/.opencode/bin:/home/shijiachen/.local/bin:/hpcdisk1/apod/shijiachen/software/EDTA/deps/infernal/bin:/hpcdisk1/apod/shijiachen/software/hmmer/bin:/hpcdisk1/apod/shijiachen/software/opencode-x86_64/bin:/hpcdisk1/apod/shijiachen/TE_annotaion/fasta_t2t/.arch-x86_64/opt/homebrew/bin:/hpcdisk1/apod/shijiachen/TE_annotaion/fasta_t2t/.arch-x86_64/opt/git/bin:/hpcdisk1/apod/shijiachen/work/.local/bin:/home/shijiachen/bin:/hpcdisk1/apod/shijiachen/work/.local/bin:/hpcdisk1/apod/shijiachen/work/pnpm:/hpcdisk1/apod/shijiachen/work/bun/bin:/hpcdisk1/apod/shijiachen/work/cargo/bin:/hpcdisk1/apod/shijiachen/work/go/bin:/hpcdisk1/apod/shijiachen/software/zsh-x86_64/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin
+ls: cannot access '/usr/bin/unsquashfs': No such file or directory
+-rwxr-xr-x. 1 root root 109360 May 16  2022 /usr/sbin/unsquashfs
+/usr/sbin/unsquashfs
+/usr/sbin/mksquashfs

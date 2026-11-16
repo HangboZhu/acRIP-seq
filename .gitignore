@@ -1,0 +1,16 @@
+# 大文件：容器镜像（sif 2.4G + sandbox ~5G），从 CNCB easyomics 重新下载
+Containers/*.sif
+Containers/*.sandbox
+Containers/*.sandbox/
+Containers/*.part
+Containers/*.log
+
+# 运行产物：试跑/正式跑的输出（qc/trim/bam/报告等，可重新生成）
+result_trial/
+result/
+
+# Snakemake 元数据与临时目录
+.snakemake/
+.java/
+__pycache__/
+*.pyc

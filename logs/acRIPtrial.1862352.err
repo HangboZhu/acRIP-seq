@@ -1,0 +1,401 @@
+Assuming unrestricted shared filesystem usage.
+host: node25
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 8
+Rules claiming more threads will be scaled down.
+Job stats:
+job                         count
+------------------------  -------
+all                             1
+collect_all_statistics          1
+collect_statistics              2
+compile_unified_report          1
+fastqc                         10
+generate_report_figures         2
+generate_unified_figures        1
+mark_duplicates                10
+merge_peaks                     1
+multiqc                         1
+peak_calling                    2
+star_alignment                 10
+trim_galore_pe                 10
+total                          52
+
+Select jobs to execute...
+Execute 8 jobs...
+
+[Sun Nov 15 20:33:26 2026]
+localrule trim_galore_pe:
+    input: /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep1/Input/GSM8759192/SRR32137744_1.fastq.gz, /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep1/Input/GSM8759192/SRR32137744_2.fastq.gz
+    output: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE288115.HepAD38.WT.rep1.Input_pe_val_1.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE288115.HepAD38.WT.rep1.Input_pe_val_2.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE288115.HepAD38.WT.rep1.Input.pe.trim.log
+    log: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore/GSE288115.HepAD38.WT.rep1.Input.pe.log
+    jobid: 18
+    reason: Missing output files: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE288115.HepAD38.WT.rep1.Input.pe.trim.log, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE288115.HepAD38.WT.rep1.Input_pe_val_1.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE288115.HepAD38.WT.rep1.Input_pe_val_2.fq.gz
+    wildcards: sample=GSE288115.HepAD38.WT.rep1.Input
+    resources: tmpdir=/hpcdisk1/apod/shijiachen/work/tmp
+
+
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore
+        trim_galore --paired -q 25 --cores 8 --phred33 --length 36             -e 0.1 --stringency 3 --fastqc --illumina             --basename "trim_GSE288115.HepAD38.WT.rep1.Input_pe" -o /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep1/Input/GSM8759192/SRR32137744_1.fastq.gz" "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep1/Input/GSM8759192/SRR32137744_2.fastq.gz"             > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE288115.HepAD38.WT.rep1.Input.pe.trim.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore/GSE288115.HepAD38.WT.rep1.Input.pe.log
+        
+Activating singularity image /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Containers/MeRIPseq_hg38_final.sandbox
+
+[Sun Nov 15 20:33:26 2026]
+localrule fastqc:
+    input: /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep1/Input/GSM8759192/SRR32137744_1.fastq.gz, /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep1/Input/GSM8759192/SRR32137744_2.fastq.gz
+    output: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep1.Input.fastqc.log
+    log: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE288115.HepAD38.WT.rep1.Input.log
+    jobid: 8
+    reason: Missing output files: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep1.Input.fastqc.log
+    wildcards: sample=GSE288115.HepAD38.WT.rep1.Input
+    resources: tmpdir=/hpcdisk1/apod/shijiachen/work/tmp
+
+
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc
+        TMP=$(mktemp -d)
+        mkdir -p "$TMP/r1"
+        if [ "pe" = "pe" ]; then
+            mkdir -p "$TMP/r2"
+            fastqc -o "$TMP/r2" -t 8 --noextract "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep1/Input/GSM8759192/SRR32137744_2.fastq.gz" > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep1.Input.fastqc.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE288115.HepAD38.WT.rep1.Input.log
+        fi
+        fastqc -o "$TMP/r1" -t 8 --noextract "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep1/Input/GSM8759192/SRR32137744_1.fastq.gz" >> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep1.Input.fastqc.log 2>> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE288115.HepAD38.WT.rep1.Input.log
+
+        b1=$(basename "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep1/Input/GSM8759192/SRR32137744_1.fastq.gz"); b1=${b1%.gz}; b1=${b1%.fq}; b1=${b1%.fastq}
+        if [ "pe" = "pe" ]; then
+            b2=$(basename "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep1/Input/GSM8759192/SRR32137744_2.fastq.gz"); b2=${b2%.gz}; b2=${b2%.fq}; b2=${b2%.fastq}
+            mv "$TMP/r1/${b1}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep1.Input_R1_fastqc.html"
+            mv "$TMP/r2/${b2}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep1.Input_R2_fastqc.html"
+        else
+            mv "$TMP/r1/${b1}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep1.Input_fastqc.html"
+        fi
+        rm -rf $TMP
+        
+Activating singularity image /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Containers/MeRIPseq_hg38_final.sandbox
+
+[Sun Nov 15 20:33:26 2026]
+localrule fastqc:
+    input: /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep3/Input/GSM8748445/SRR32064841_1.fastq.gz, /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep3/Input/GSM8748445/SRR32064841_2.fastq.gz
+    output: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep3.Input.fastqc.log
+    log: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE287582.MT4.WT.rep3.Input.log
+    jobid: 4
+    reason: Missing output files: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep3.Input.fastqc.log
+    wildcards: sample=GSE287582.MT4.WT.rep3.Input
+    resources: tmpdir=/hpcdisk1/apod/shijiachen/work/tmp
+
+
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc
+        TMP=$(mktemp -d)
+        mkdir -p "$TMP/r1"
+        if [ "pe" = "pe" ]; then
+            mkdir -p "$TMP/r2"
+            fastqc -o "$TMP/r2" -t 8 --noextract "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep3/Input/GSM8748445/SRR32064841_2.fastq.gz" > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep3.Input.fastqc.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE287582.MT4.WT.rep3.Input.log
+        fi
+        fastqc -o "$TMP/r1" -t 8 --noextract "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep3/Input/GSM8748445/SRR32064841_1.fastq.gz" >> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep3.Input.fastqc.log 2>> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE287582.MT4.WT.rep3.Input.log
+
+        b1=$(basename "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep3/Input/GSM8748445/SRR32064841_1.fastq.gz"); b1=${b1%.gz}; b1=${b1%.fq}; b1=${b1%.fastq}
+        if [ "pe" = "pe" ]; then
+            b2=$(basename "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep3/Input/GSM8748445/SRR32064841_2.fastq.gz"); b2=${b2%.gz}; b2=${b2%.fq}; b2=${b2%.fastq}
+            mv "$TMP/r1/${b1}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep3.Input_R1_fastqc.html"
+            mv "$TMP/r2/${b2}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep3.Input_R2_fastqc.html"
+        else
+            mv "$TMP/r1/${b1}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep3.Input_fastqc.html"
+        fi
+        rm -rf $TMP
+        
+Activating singularity image /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Containers/MeRIPseq_hg38_final.sandbox
+
+[Sun Nov 15 20:33:26 2026]
+localrule fastqc:
+    input: /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep2/Input/GSM8759194/SRR32137742_1.fastq.gz, /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep2/Input/GSM8759194/SRR32137742_2.fastq.gz
+    output: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep2.Input.fastqc.log
+    log: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE288115.HepAD38.WT.rep2.Input.log
+    jobid: 9
+    reason: Missing output files: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep2.Input.fastqc.log
+    wildcards: sample=GSE288115.HepAD38.WT.rep2.Input
+    resources: tmpdir=/hpcdisk1/apod/shijiachen/work/tmp
+
+
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc
+        TMP=$(mktemp -d)
+        mkdir -p "$TMP/r1"
+        if [ "pe" = "pe" ]; then
+            mkdir -p "$TMP/r2"
+            fastqc -o "$TMP/r2" -t 8 --noextract "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep2/Input/GSM8759194/SRR32137742_2.fastq.gz" > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep2.Input.fastqc.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE288115.HepAD38.WT.rep2.Input.log
+        fi
+        fastqc -o "$TMP/r1" -t 8 --noextract "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep2/Input/GSM8759194/SRR32137742_1.fastq.gz" >> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep2.Input.fastqc.log 2>> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE288115.HepAD38.WT.rep2.Input.log
+
+        b1=$(basename "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep2/Input/GSM8759194/SRR32137742_1.fastq.gz"); b1=${b1%.gz}; b1=${b1%.fq}; b1=${b1%.fastq}
+        if [ "pe" = "pe" ]; then
+            b2=$(basename "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep2/Input/GSM8759194/SRR32137742_2.fastq.gz"); b2=${b2%.gz}; b2=${b2%.fq}; b2=${b2%.fastq}
+            mv "$TMP/r1/${b1}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep2.Input_R1_fastqc.html"
+            mv "$TMP/r2/${b2}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep2.Input_R2_fastqc.html"
+        else
+            mv "$TMP/r1/${b1}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep2.Input_fastqc.html"
+        fi
+        rm -rf $TMP
+        
+Activating singularity image /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Containers/MeRIPseq_hg38_final.sandbox
+
+[Sun Nov 15 20:33:26 2026]
+localrule trim_galore_pe:
+    input: /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep3/Input/GSM8748445/SRR32064841_1.fastq.gz, /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep3/Input/GSM8748445/SRR32064841_2.fastq.gz
+    output: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_1.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_2.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE287582.MT4.WT.rep3.Input.pe.trim.log
+    log: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore/GSE287582.MT4.WT.rep3.Input.pe.log
+    jobid: 14
+    reason: Missing output files: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE287582.MT4.WT.rep3.Input.pe.trim.log, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_2.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_1.fq.gz
+    wildcards: sample=GSE287582.MT4.WT.rep3.Input
+    resources: tmpdir=/hpcdisk1/apod/shijiachen/work/tmp
+
+
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore
+        trim_galore --paired -q 25 --cores 8 --phred33 --length 36             -e 0.1 --stringency 3 --fastqc --illumina             --basename "trim_GSE287582.MT4.WT.rep3.Input_pe" -o /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep3/Input/GSM8748445/SRR32064841_1.fastq.gz" "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep3/Input/GSM8748445/SRR32064841_2.fastq.gz"             > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE287582.MT4.WT.rep3.Input.pe.trim.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore/GSE287582.MT4.WT.rep3.Input.pe.log
+        
+Activating singularity image /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Containers/MeRIPseq_hg38_final.sandbox
+
+[Sun Nov 15 20:33:26 2026]
+localrule fastqc:
+    input: /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep3/Input/GSM8759196/SRR32137740_1.fastq.gz, /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep3/Input/GSM8759196/SRR32137740_2.fastq.gz
+    output: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep3.Input.fastqc.log
+    log: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE288115.HepAD38.WT.rep3.Input.log
+    jobid: 10
+    reason: Missing output files: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep3.Input.fastqc.log
+    wildcards: sample=GSE288115.HepAD38.WT.rep3.Input
+    resources: tmpdir=/hpcdisk1/apod/shijiachen/work/tmp
+
+
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc
+        TMP=$(mktemp -d)
+        mkdir -p "$TMP/r1"
+        if [ "pe" = "pe" ]; then
+            mkdir -p "$TMP/r2"
+            fastqc -o "$TMP/r2" -t 8 --noextract "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep3/Input/GSM8759196/SRR32137740_2.fastq.gz" > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep3.Input.fastqc.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE288115.HepAD38.WT.rep3.Input.log
+        fi
+        fastqc -o "$TMP/r1" -t 8 --noextract "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep3/Input/GSM8759196/SRR32137740_1.fastq.gz" >> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep3.Input.fastqc.log 2>> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE288115.HepAD38.WT.rep3.Input.log
+
+        b1=$(basename "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep3/Input/GSM8759196/SRR32137740_1.fastq.gz"); b1=${b1%.gz}; b1=${b1%.fq}; b1=${b1%.fastq}
+        if [ "pe" = "pe" ]; then
+            b2=$(basename "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep3/Input/GSM8759196/SRR32137740_2.fastq.gz"); b2=${b2%.gz}; b2=${b2%.fq}; b2=${b2%.fastq}
+            mv "$TMP/r1/${b1}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep3.Input_R1_fastqc.html"
+            mv "$TMP/r2/${b2}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep3.Input_R2_fastqc.html"
+        else
+            mv "$TMP/r1/${b1}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE288115.HepAD38.WT.rep3.Input_fastqc.html"
+        fi
+        rm -rf $TMP
+        
+Activating singularity image /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Containers/MeRIPseq_hg38_final.sandbox
+
+[Sun Nov 15 20:33:26 2026]
+localrule trim_galore_pe:
+    input: /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep3/Input/GSM8759196/SRR32137740_1.fastq.gz, /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep3/Input/GSM8759196/SRR32137740_2.fastq.gz
+    output: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE288115.HepAD38.WT.rep3.Input_pe_val_1.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE288115.HepAD38.WT.rep3.Input_pe_val_2.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE288115.HepAD38.WT.rep3.Input.pe.trim.log
+    log: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore/GSE288115.HepAD38.WT.rep3.Input.pe.log
+    jobid: 20
+    reason: Missing output files: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE288115.HepAD38.WT.rep3.Input.pe.trim.log, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE288115.HepAD38.WT.rep3.Input_pe_val_1.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE288115.HepAD38.WT.rep3.Input_pe_val_2.fq.gz
+    wildcards: sample=GSE288115.HepAD38.WT.rep3.Input
+    resources: tmpdir=/hpcdisk1/apod/shijiachen/work/tmp
+
+
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore
+        trim_galore --paired -q 25 --cores 8 --phred33 --length 36             -e 0.1 --stringency 3 --fastqc --illumina             --basename "trim_GSE288115.HepAD38.WT.rep3.Input_pe" -o /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep3/Input/GSM8759196/SRR32137740_1.fastq.gz" "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep3/Input/GSM8759196/SRR32137740_2.fastq.gz"             > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE288115.HepAD38.WT.rep3.Input.pe.trim.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore/GSE288115.HepAD38.WT.rep3.Input.pe.log
+        
+Activating singularity image /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Containers/MeRIPseq_hg38_final.sandbox
+
+[Sun Nov 15 20:33:27 2026]
+localrule trim_galore_pe:
+    input: /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep2/Input/GSM8759194/SRR32137742_1.fastq.gz, /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep2/Input/GSM8759194/SRR32137742_2.fastq.gz
+    output: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE288115.HepAD38.WT.rep2.Input_pe_val_1.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE288115.HepAD38.WT.rep2.Input_pe_val_2.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE288115.HepAD38.WT.rep2.Input.pe.trim.log
+    log: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore/GSE288115.HepAD38.WT.rep2.Input.pe.log
+    jobid: 19
+    reason: Missing output files: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE288115.HepAD38.WT.rep2.Input.pe.trim.log, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE288115.HepAD38.WT.rep2.Input_pe_val_1.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE288115.HepAD38.WT.rep2.Input_pe_val_2.fq.gz
+    wildcards: sample=GSE288115.HepAD38.WT.rep2.Input
+    resources: tmpdir=/hpcdisk1/apod/shijiachen/work/tmp
+
+
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore
+        trim_galore --paired -q 25 --cores 8 --phred33 --length 36             -e 0.1 --stringency 3 --fastqc --illumina             --basename "trim_GSE288115.HepAD38.WT.rep2.Input_pe" -o /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep2/Input/GSM8759194/SRR32137742_1.fastq.gz" "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep2/Input/GSM8759194/SRR32137742_2.fastq.gz"             > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE288115.HepAD38.WT.rep2.Input.pe.trim.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore/GSE288115.HepAD38.WT.rep2.Input.pe.log
+        
+Activating singularity image /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Containers/MeRIPseq_hg38_final.sandbox
+[Sun Nov 15 20:50:43 2026]
+Finished job 4.
+1 of 52 steps (2%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sun Nov 15 20:50:43 2026]
+localrule fastqc:
+    input: /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/Input/GSM8748443/SRR32064843_1.fastq.gz, /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/Input/GSM8748443/SRR32064843_2.fastq.gz
+    output: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep2.Input.fastqc.log
+    log: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE287582.MT4.WT.rep2.Input.log
+    jobid: 3
+    reason: Missing output files: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep2.Input.fastqc.log
+    wildcards: sample=GSE287582.MT4.WT.rep2.Input
+    resources: tmpdir=/hpcdisk1/apod/shijiachen/work/tmp
+
+
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc
+        TMP=$(mktemp -d)
+        mkdir -p "$TMP/r1"
+        if [ "pe" = "pe" ]; then
+            mkdir -p "$TMP/r2"
+            fastqc -o "$TMP/r2" -t 8 --noextract "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/Input/GSM8748443/SRR32064843_2.fastq.gz" > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep2.Input.fastqc.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE287582.MT4.WT.rep2.Input.log
+        fi
+        fastqc -o "$TMP/r1" -t 8 --noextract "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/Input/GSM8748443/SRR32064843_1.fastq.gz" >> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep2.Input.fastqc.log 2>> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE287582.MT4.WT.rep2.Input.log
+
+        b1=$(basename "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/Input/GSM8748443/SRR32064843_1.fastq.gz"); b1=${b1%.gz}; b1=${b1%.fq}; b1=${b1%.fastq}
+        if [ "pe" = "pe" ]; then
+            b2=$(basename "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/Input/GSM8748443/SRR32064843_2.fastq.gz"); b2=${b2%.gz}; b2=${b2%.fq}; b2=${b2%.fastq}
+            mv "$TMP/r1/${b1}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep2.Input_R1_fastqc.html"
+            mv "$TMP/r2/${b2}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep2.Input_R2_fastqc.html"
+        else
+            mv "$TMP/r1/${b1}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep2.Input_fastqc.html"
+        fi
+        rm -rf $TMP
+        
+Activating singularity image /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Containers/MeRIPseq_hg38_final.sandbox
+[Sun Nov 15 20:51:38 2026]
+Finished job 8.
+2 of 52 steps (4%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sun Nov 15 20:51:38 2026]
+localrule trim_galore_pe:
+    input: /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/Input/GSM8748443/SRR32064843_1.fastq.gz, /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/Input/GSM8748443/SRR32064843_2.fastq.gz
+    output: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep2.Input_pe_val_1.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep2.Input_pe_val_2.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE287582.MT4.WT.rep2.Input.pe.trim.log
+    log: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore/GSE287582.MT4.WT.rep2.Input.pe.log
+    jobid: 13
+    reason: Missing output files: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE287582.MT4.WT.rep2.Input.pe.trim.log, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep2.Input_pe_val_1.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep2.Input_pe_val_2.fq.gz
+    wildcards: sample=GSE287582.MT4.WT.rep2.Input
+    resources: tmpdir=/hpcdisk1/apod/shijiachen/work/tmp
+
+
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore
+        trim_galore --paired -q 25 --cores 8 --phred33 --length 36             -e 0.1 --stringency 3 --fastqc --illumina             --basename "trim_GSE287582.MT4.WT.rep2.Input_pe" -o /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/Input/GSM8748443/SRR32064843_1.fastq.gz" "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/Input/GSM8748443/SRR32064843_2.fastq.gz"             > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE287582.MT4.WT.rep2.Input.pe.trim.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore/GSE287582.MT4.WT.rep2.Input.pe.log
+        
+Activating singularity image /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Containers/MeRIPseq_hg38_final.sandbox
+[Sun Nov 15 20:53:21 2026]
+Finished job 9.
+3 of 52 steps (6%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sun Nov 15 20:53:21 2026]
+localrule trim_galore_pe:
+    input: /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/IP/GSM8748444/SRR32064842_1.fastq.gz, /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/IP/GSM8748444/SRR32064842_2.fastq.gz
+    output: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep2.IP_pe_val_1.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep2.IP_pe_val_2.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE287582.MT4.WT.rep2.IP.pe.trim.log
+    log: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore/GSE287582.MT4.WT.rep2.IP.pe.log
+    jobid: 11
+    reason: Missing output files: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE287582.MT4.WT.rep2.IP.pe.trim.log, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep2.IP_pe_val_1.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep2.IP_pe_val_2.fq.gz
+    wildcards: sample=GSE287582.MT4.WT.rep2.IP
+    resources: tmpdir=/hpcdisk1/apod/shijiachen/work/tmp
+
+
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore
+        trim_galore --paired -q 25 --cores 8 --phred33 --length 36             -e 0.1 --stringency 3 --fastqc --illumina             --basename "trim_GSE287582.MT4.WT.rep2.IP_pe" -o /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/IP/GSM8748444/SRR32064842_1.fastq.gz" "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/IP/GSM8748444/SRR32064842_2.fastq.gz"             > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/GSE287582.MT4.WT.rep2.IP.pe.trim.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/trim_galore/GSE287582.MT4.WT.rep2.IP.pe.log
+        
+Activating singularity image /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Containers/MeRIPseq_hg38_final.sandbox
+[Sun Nov 15 20:53:29 2026]
+Finished job 10.
+4 of 52 steps (8%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sun Nov 15 20:53:29 2026]
+localrule fastqc:
+    input: /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/IP/GSM8748444/SRR32064842_1.fastq.gz, /hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/IP/GSM8748444/SRR32064842_2.fastq.gz
+    output: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep2.IP.fastqc.log
+    log: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE287582.MT4.WT.rep2.IP.log
+    jobid: 1
+    reason: Missing output files: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep2.IP.fastqc.log
+    wildcards: sample=GSE287582.MT4.WT.rep2.IP
+    resources: tmpdir=/hpcdisk1/apod/shijiachen/work/tmp
+
+
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc
+        TMP=$(mktemp -d)
+        mkdir -p "$TMP/r1"
+        if [ "pe" = "pe" ]; then
+            mkdir -p "$TMP/r2"
+            fastqc -o "$TMP/r2" -t 8 --noextract "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/IP/GSM8748444/SRR32064842_2.fastq.gz" > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep2.IP.fastqc.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE287582.MT4.WT.rep2.IP.log
+        fi
+        fastqc -o "$TMP/r1" -t 8 --noextract "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/IP/GSM8748444/SRR32064842_1.fastq.gz" >> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep2.IP.fastqc.log 2>> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/fastqc/GSE287582.MT4.WT.rep2.IP.log
+
+        b1=$(basename "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/IP/GSM8748444/SRR32064842_1.fastq.gz"); b1=${b1%.gz}; b1=${b1%.fq}; b1=${b1%.fastq}
+        if [ "pe" = "pe" ]; then
+            b2=$(basename "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE287582/GSE287582.MT4.WT.rep2/IP/GSM8748444/SRR32064842_2.fastq.gz"); b2=${b2%.gz}; b2=${b2%.fq}; b2=${b2%.fastq}
+            mv "$TMP/r1/${b1}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep2.IP_R1_fastqc.html"
+            mv "$TMP/r2/${b2}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep2.IP_R2_fastqc.html"
+        else
+            mv "$TMP/r1/${b1}_fastqc.html" "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/qc/GSE287582.MT4.WT.rep2.IP_fastqc.html"
+        fi
+        rm -rf $TMP
+        
+Activating singularity image /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Containers/MeRIPseq_hg38_final.sandbox
+[Sun Nov 15 20:55:41 2026]
+Finished job 14.
+5 of 52 steps (10%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Sun Nov 15 20:55:42 2026]
+localrule star_alignment:
+    input: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_1.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_2.fq.gz
+    output: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input.Aligned.sortedByCoord.out.bam, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input.STAR.log
+    log: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/star_alignment/GSE287582.MT4.WT.rep3.Input.log
+    jobid: 24
+    reason: Missing output files: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input.STAR.log, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input.Aligned.sortedByCoord.out.bam; Input files updated by another job: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_2.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_1.fq.gz
+    wildcards: sample=GSE287582.MT4.WT.rep3.Input
+    resources: tmpdir=/hpcdisk1/apod/shijiachen/work/tmp
+
+
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/star_alignment
+        STAR --runThreadN 8              --genomeDir "/hpcdisk1/XDB_vc/huxh/ncRNA_edit/rna_editing_protocol/STAR/STAR_genome_index_hg38_v33"              --readFilesIn /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_1.fq.gz /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_2.fq.gz              --readFilesCommand zcat              --outFileNamePrefix "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input."              --outSAMtype BAM SortedByCoordinate               > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input.STAR.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/star_alignment/GSE287582.MT4.WT.rep3.Input.log
+        
+Activating singularity image /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Containers/MeRIPseq_hg38_final.sandbox
+RuleException:
+CalledProcessError in file /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Scripts/pipeline.smk, line 345:
+Command ' singularity  exec --home '/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline' --cleanenv --bind /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline:/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline,/hpcdisk1:/hpcdisk1 /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/Containers/MeRIPseq_hg38_final.sandbox bash -c 'set -euo pipefail;  
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/star_alignment
+        STAR --runThreadN 8              --genomeDir "/hpcdisk1/XDB_vc/huxh/ncRNA_edit/rna_editing_protocol/STAR/STAR_genome_index_hg38_v33"              --readFilesIn /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_1.fq.gz /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_2.fq.gz              --readFilesCommand zcat              --outFileNamePrefix "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input."              --outSAMtype BAM SortedByCoordinate               > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input.STAR.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/star_alignment/GSE287582.MT4.WT.rep3.Input.log'' returned non-zero exit status 105.
+[Sun Nov 15 20:55:44 2026]
+Error in rule star_alignment:
+    jobid: 24
+    input: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_1.fq.gz, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_2.fq.gz
+    output: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input.Aligned.sortedByCoord.out.bam, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input.STAR.log
+    log: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/star_alignment/GSE287582.MT4.WT.rep3.Input.log (check log file(s) for error details)
+    shell:
+        
+        mkdir -p /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/star_alignment
+        STAR --runThreadN 8              --genomeDir "/hpcdisk1/XDB_vc/huxh/ncRNA_edit/rna_editing_protocol/STAR/STAR_genome_index_hg38_v33"              --readFilesIn /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_1.fq.gz /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/trim/trim_GSE287582.MT4.WT.rep3.Input_pe_val_2.fq.gz              --readFilesCommand zcat              --outFileNamePrefix "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input."              --outSAMtype BAM SortedByCoordinate               > /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input.STAR.log 2> /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/logs/star_alignment/GSE287582.MT4.WT.rep3.Input.log
+        
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Removing output files of failed job star_alignment since they might be corrupted:
+/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input.Aligned.sortedByCoord.out.bam, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input.STAR.log
+[Sun Nov 15 20:56:00 2026]
+Finished job 1.
+6 of 52 steps (12%) done
+[Sun Nov 15 20:56:18 2026]
+Finished job 3.
+7 of 52 steps (13%) done
+[Sun Nov 15 20:56:41 2026]
+Finished job 11.
+8 of 52 steps (15%) done
+[Sun Nov 15 20:57:45 2026]
+Finished job 18.
+9 of 52 steps (17%) done
+[Sun Nov 15 20:59:42 2026]
+Finished job 13.
+10 of 52 steps (19%) done
+[Sun Nov 15 20:59:56 2026]
+Finished job 20.
+11 of 52 steps (21%) done
+[Sun Nov 15 21:00:08 2026]
+Finished job 19.
+12 of 52 steps (23%) done
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake/log/2026-11-15T203324.715614.snakemake.log
+WorkflowError:
+At least one job did not complete successfully.

@@ -1,0 +1,16 @@
+	/mnt/software/STAR-2.7.11a/source/STAR --runMode genomeGenerate --runThreadN 8 --genomeDir /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/References/STAR_hg38_v33_star2.7.11a --genomeFastaFiles /hpcdisk1/XDB_vc/huxh/ncRNA_edit/rna_editing_protocol/ref_hg38/genome/GRCh38.primary_assembly.genome.fa --sjdbGTFfile /hpcdisk1/XDB_vc/huxh/ncRNA_edit/rna_editing_protocol/ref_hg38/annotation/gencode.v33.primary_assembly.annotation.gtf --sjdbOverhang 125 --genomeSAsparseD 1 --genomeSAindexNbases 14 --genomeChrBinNbits 18
+	STAR version: 2.7.11a   compiled: 2025-09-08T13:12:53+00:00 :/mnt/software/STAR-2.7.11a/source
+Nov 16 22:06:08 ..... started STAR run
+Nov 16 22:06:08 ... starting to generate Genome files
+Nov 16 22:06:56 ..... processing annotations GTF
+Nov 16 22:07:28 ... starting to sort Suffix Array. This may take a long time...
+Nov 16 22:07:42 ... sorting Suffix Array chunks and saving them to disk...
+Nov 16 22:37:39 ... loading chunks from disk, packing SA...
+Nov 16 22:39:51 ... finished generating suffix array
+Nov 16 22:39:51 ... generating Suffix Array index
+Nov 16 22:43:12 ... completed Suffix Array index
+Nov 16 22:43:13 ..... inserting junctions into the genome indices
+Nov 16 22:47:13 ... writing Genome to disk ...
+Nov 16 22:47:18 ... writing Suffix Array to disk ...
+Nov 16 22:48:15 ... writing SAindex to disk
+Nov 16 22:48:22 ..... finished successfully

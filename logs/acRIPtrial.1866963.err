@@ -1,0 +1,8 @@
+Assuming unrestricted shared filesystem usage.
+host: computg4
+Building DAG of jobs...
+WorkflowError:
+Failed to get singularity version:
+[33mWARNING:[0m Could not lookup the current user's information: user: unknown userid 1175
+[31mFATAL:  [0m Couldn't determine user account information: user: unknown userid 1175
+

@@ -1,0 +1,13 @@
+Running exomePeak2 with parameters:
+IP BAM(s): /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep2.IP.DeDup.bam, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.IP.DeDup.bam 
+Input BAM(s): /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep2.Input.DeDup.bam, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input.DeDup.bam 
+GTF: /hpcdisk1/XDB_vc/huxh/ncRNA_edit/rna_editing_protocol/ref_hg38/annotation/gencode.v33.primary_assembly.annotation.gtf 
+Genome: hg38 
+P cutoff: 1e-10 
+Strandness: unstrand 
+Fragment length: 100 
+Bin size: 25 
+Step size: 25 
+Threads: 8 
+Library layout: pe 
+Replicates -> joint peak calling: TRUE 

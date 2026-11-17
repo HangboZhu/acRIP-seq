@@ -53,8 +53,12 @@ outputdir: "./result"
 # ------------------------------------------------------------
 # Reference
 # ------------------------------------------------------------
-# STAR index prefix directory (built with the same GTF)
-referencedir: "References/hg38_chr_star_index"
+# STAR index prefix directory (built with the same GTF).
+# Rebuilt 2026-11-16 with the container's STAR 2.7.11a by
+# slurm/build_star_index.sbatch -- the shared XDB_vc index is 2.7.0d
+# and incompatible. GTF here must be switched to the matching
+# gencode.v33 file before the full run.
+referencedir: "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/References/STAR_hg38_v33_star2.7.11a"
 # GTF used by exomePeak2 for exon-aware peak calling
 gtf: "References/gencode.v46.annotation.gtf"
 # Genome FASTA used for peak motif sequence extraction (only when motif enabled)

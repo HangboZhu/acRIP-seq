@@ -332,8 +332,13 @@ rule star_alignment:
         log = BAM_DIR / "{sample}.STAR.log"
     log:
         LOG_DIR / "star_alignment" / "{sample}.log"
+    # threads MUST be a directive (not params): snakemake sizes scheduling
+    # and per-job core allocation from it. With threads hidden in params
+    # every star job claims 1 core, so up to 8 STARs run in parallel and
+    # each loads a ~35G genome index -> node OOM (exit 137), which is how
+    # the 2026-11-16 22:45 run died.
+    threads: config.get("threads", 8)
     params:
-        threads = config.get("threads", 8),
         ref_dir = REFERENCEDIR,
         outdir = BAM_DIR,
         extra_args = STAR_EXTRA_ARGS,
@@ -344,7 +349,7 @@ rule star_alignment:
     shell:
         """
         mkdir -p {params.outdir} {LOG_DIR}/star_alignment
-        STAR --runThreadN {params.threads} \
+        STAR --runThreadN {threads} \
              --genomeDir "{params.ref_dir}" \
              --readFilesIn {params.read_files} \
              --readFilesCommand zcat \

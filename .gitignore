@@ -12,5 +12,11 @@ result/
 # Snakemake 元数据与临时目录
 .snakemake/
 .java/
+.cache/
 __pycache__/
 *.pyc
+
+# 大文件：STAR 基因组索引（~28G，可用 slurm/build_star_index.sbatch 重建）
+References/STAR_*/
+# 大文件：标准染色体过滤版 GTF（1.3G，可从共享区 GTF 用 awk 重建，见 config.trial.yaml 注释）
+References/*.gtf

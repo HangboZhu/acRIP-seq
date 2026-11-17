@@ -1,0 +1,59 @@
+Running exomePeak2 with parameters:
+IP BAM(s): /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep2.IP.DeDup.bam, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.IP.DeDup.bam 
+Input BAM(s): /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep2.Input.DeDup.bam, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE287582.MT4.WT.rep3.Input.DeDup.bam 
+GTF: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/References/gencode.v33.primary_chr.gtf 
+Genome: hg38 
+P cutoff: 1e-10 
+Strandness: unstrand 
+Fragment length: 100 
+Bin size: 25 
+Step size: 25 
+Threads: 8 
+Library layout: pe 
+Replicates -> joint peak calling: TRUE 
+Peak calling completed successfully!
+Collecting statistics from /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial...
+  IP sample: GSE287582.MT4.WT.rep2.IP,GSE287582.MT4.WT.rep3.IP
+  Input sample: GSE287582.MT4.WT.rep2.Input,GSE287582.MT4.WT.rep3.Input
+  Peak BED: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/exomePeak2_output_GSE287582.MT4.WT/peaks.bed
+Statistics saved to: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/report/data/statistics_GSE287582.MT4.WT.json
+Generating figures in /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/report/figures with prefix GSE287582.MT4.WT...
+  - GSE287582.MT4.WT_reads_statistics.png
+  - GSE287582.MT4.WT_mapping_rate.png
+  - GSE287582.MT4.WT_peak_counts.png
+  - GSE287582.MT4.WT_m6a_motif_pie.png
+Figure generation completed!
+Running exomePeak2 with parameters:
+IP BAM(s): /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE288115.HepAD38.WT.rep1.IP.DeDup.bam, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE288115.HepAD38.WT.rep2.IP.DeDup.bam, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE288115.HepAD38.WT.rep3.IP.DeDup.bam 
+Input BAM(s): /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE288115.HepAD38.WT.rep1.Input.DeDup.bam, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE288115.HepAD38.WT.rep2.Input.DeDup.bam, /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/bam/GSE288115.HepAD38.WT.rep3.Input.DeDup.bam 
+GTF: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/References/gencode.v33.primary_chr.gtf 
+Genome: hg38 
+P cutoff: 1e-10 
+Strandness: unstrand 
+Fragment length: 100 
+Bin size: 25 
+Step size: 25 
+Threads: 8 
+Library layout: pe 
+Replicates -> joint peak calling: TRUE 
+Peak calling completed successfully!
+Collecting statistics from /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial...
+  IP sample: GSE288115.HepAD38.WT.rep1.IP,GSE288115.HepAD38.WT.rep2.IP,GSE288115.HepAD38.WT.rep3.IP
+  Input sample: GSE288115.HepAD38.WT.rep1.Input,GSE288115.HepAD38.WT.rep2.Input,GSE288115.HepAD38.WT.rep3.Input
+  Peak BED: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/exomePeak2_output_GSE288115.HepAD38.WT/peaks.bed
+Statistics saved to: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/report/data/statistics_GSE288115.HepAD38.WT.json
+Merged statistics saved to: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/report/data/statistics_all.json
+Generating unified figures in /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/report/figures...
+  - all_reads_statistics.png
+  - all_mapping_rate.png
+Unified figure generation completed!
+Generating figures in /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/report/figures with prefix GSE288115.HepAD38.WT...
+  - GSE288115.HepAD38.WT_reads_statistics.png
+  - GSE288115.HepAD38.WT_mapping_rate.png
+  - GSE288115.HepAD38.WT_peak_counts.png
+  - GSE288115.HepAD38.WT_m6a_motif_pie.png
+Figure generation completed!
+Generating unified HTML report...
+Unified HTML report saved to: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/report/acRIP_Analysis_Report_CN.html
+Generating unified HTML report...
+Unified HTML report saved to: /hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/result_trial/report/acRIP_Analysis_Report_EN.html

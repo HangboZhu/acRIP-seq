@@ -33,8 +33,12 @@ sample_pairs:
       - ["/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep3/Input/GSM8759196/SRR32137740_1.fastq.gz", "/hpcdisk1/apod/shijiachen/yuliao/4/data/human/acRIP-seq/bulk/GSE288115/GSE288115.HepAD38.WT.rep3/Input/GSM8759196/SRR32137740_2.fastq.gz"]
 
 outputdir: "./result_trial"
-referencedir: "/hpcdisk1/XDB_vc/huxh/ncRNA_edit/rna_editing_protocol/STAR/STAR_genome_index_hg38_v33"
-gtf: "/hpcdisk1/XDB_vc/huxh/ncRNA_edit/rna_editing_protocol/ref_hg38/annotation/gencode.v33.primary_assembly.annotation.gtf"
+referencedir: "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/References/STAR_hg38_v33_star2.7.11a"
+# Filtered to chr1-22/X/Y/M: exomePeak2 GC correction uses the container's
+# UCSC hg38 BSgenome, whose seqlevels have no bare GRCh38 scaffold names
+# (GL*/KI*) -- unfiltered GENCODE GTF made getSeq() fail with
+# "seqlevels are to be dropped but are currently in use" (2026-11-17).
+gtf: "/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/References/gencode.v33.primary_chr.gtf"
 genome_fasta: "/hpcdisk1/XDB_vc/huxh/ncRNA_edit/rna_editing_protocol/ref_hg38/genome/GRCh38.primary_assembly.genome.fa"
 sif: "Containers/MeRIPseq_hg38_final.sandbox"
 

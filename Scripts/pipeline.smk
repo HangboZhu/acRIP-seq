@@ -80,6 +80,16 @@ def parse_fastq_field(raw, sample_names):
     if raw is None or raw == "":
         return [[] for _ in range(n)]
     if n == 1:
+        # make_config_from_pairs.py always emits a list of per-sample lists,
+        # even for single-sample (no-replicate) groups: ip_fastq: [[r1, r2]].
+        # Unwrap that one level so the inner [r1, r2] is treated as the
+        # sample's files; a flat legacy "ip_fastq: [r1, r2]" still works.
+        if (
+            isinstance(raw, (list, tuple))
+            and len(raw) == 1
+            and isinstance(raw[0], (list, tuple))
+        ):
+            return [fastq_entry(raw[0])]
         return [fastq_entry(raw)]
     if not isinstance(raw, (list, tuple)) or len(raw) != n:
         raise ValueError(
@@ -338,6 +348,9 @@ rule star_alignment:
     # each loads a ~35G genome index -> node OOM (exit 137), which is how
     # the 2026-11-16 22:45 run died.
     threads: config.get("threads", 8)
+    # Genome load (~35G for human/mouse) + BAM sort headroom (--limitBAMsortRAM)
+    resources:
+        mem_mb = config.get("star_mem_mb", 96000)
     params:
         ref_dir = REFERENCEDIR,
         outdir = BAM_DIR,
@@ -355,6 +368,7 @@ rule star_alignment:
              --readFilesCommand zcat \
              --outFileNamePrefix "{params.outdir}/{wildcards.sample}." \
              --outSAMtype BAM SortedByCoordinate \
+             --limitBAMsortRAM 40000000000 \
              {params.extra_args} > {output.log} 2> {log}
         """
 
@@ -419,6 +433,8 @@ rule peak_calling:
             if all(SAMPLE_LAYOUT[s] == "se" for s in PAIR_INFO[wildcards.pair]["ip_samples"] + PAIR_INFO[wildcards.pair]["input_samples"])
             else "mixed"
         )
+    resources:
+        mem_mb = 48000
     container: SIF
     shell:
         """
@@ -672,7 +688,7 @@ rule compile_report:
             -w {params.workdir} \
             --ip-sample "{params.ip_sample}" \
             --input-sample "{params.input_sample}" \
-            -g {params.genome} \
+            -g "{params.genome}" \
             -t "{params.report_title}" \
             -st "{params.report_subtitle}" \
             -c "{params.company_name}" \
@@ -685,7 +701,7 @@ rule compile_report:
             -w {params.workdir} \
             --ip-sample "{params.ip_sample}" \
             --input-sample "{params.input_sample}" \
-            -g {params.genome} \
+            -g "{params.genome}" \
             -t "{params.report_title}" \
             -st "{params.report_subtitle}" \
             -c "{params.company_name}" \
@@ -746,7 +762,10 @@ rule compile_unified_report:
         LOG_DIR / "compile_unified_report.log"
     params:
         workdir = OUTPUT_DIR,
-        genome = GENOME,
+        # -g is a plain HTML label here (no BSgenome lookup), but argparse
+        # rejects an empty value ("expected one argument", job 1872919/1872923),
+        # so substitute an honest label when GC correction is disabled.
+        genome = GENOME if GENOME else "na (no BSgenome; GC correction disabled)",
         report_title = "acRIP-seq Analysis Report",
         report_subtitle = "ac4C RNA Immunoprecipitation sequencing Analysis Report",
         company_name = "pi-omicskit Bioinformatics",
@@ -759,7 +778,7 @@ rule compile_unified_report:
         mkdir -p {LOG_DIR}
         python {workflow.basedir}/scripts/compile_unified_report_i18n.py \
             -w {params.workdir} \
-            -g {params.genome} \
+            -g "{params.genome}" \
             -t "{params.report_title}" \
             -st "{params.report_subtitle}" \
             -c "{params.company_name}" \
@@ -771,7 +790,7 @@ rule compile_unified_report:
             -o {output.html_report} 2> {log}
         python {workflow.basedir}/scripts/compile_unified_report_i18n.py \
             -w {params.workdir} \
-            -g {params.genome} \
+            -g "{params.genome}" \
             -t "{params.report_title}" \
             -st "{params.report_subtitle}" \
             -c "{params.company_name}" \

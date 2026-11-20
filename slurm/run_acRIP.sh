@@ -17,6 +17,26 @@ fi
 
 cd "${PIPE_DIR}"
 
+if [[ "${EXECUTOR:-local}" == "slurm" ]]; then
+    # Cluster execution: every rule job becomes its own sbatch, spread over
+    # nodes. core56 (computg*) is excluded from the partition list because
+    # computg4 lacks a passwd entry for uid 1175 (singularity aborts there).
+    # --jobs caps concurrent slurm jobs; --cores is ignored by the slurm
+    # executor but kept harmless. --rerun-triggers mtime can be passed via
+    # "$@" to resume without re-running jobs whose rule code changed.
+    snakemake \
+        -s Scripts/pipeline.smk \
+        --use-singularity \
+        --executor slurm \
+        --jobs "${SLURM_JOBS:-40}" \
+        --default-resources \
+            "slurm_partition=c128m1T,vmcore128,corexd192" \
+            "mem_mb=16000" \
+            "tmpdir=/hpcdisk1/apod/shijiachen/work/tmp" \
+        --printshellcmds \
+        --singularity-args "--cleanenv ${BIND_ARGS}" \
+        "$@"
+else
 snakemake \
     -s Scripts/pipeline.smk \
     --use-singularity \
@@ -24,3 +44,4 @@ snakemake \
     --printshellcmds \
     --singularity-args "--cleanenv ${BIND_ARGS}" \
     "$@"
+fi

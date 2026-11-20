@@ -14,6 +14,12 @@
 #SBATCH --nodelist=nodef1,nodef2,nodef3,nodef4,node25,node27
 #SBATCH --output=/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/logs/acRIPtrial.%j.out
 #SBATCH --error=/hpcdisk1/apod/shijiachen/yuliao/acRIPseq_pipeline/logs/acRIPtrial.%j.err
+# Must stay in the header block above the comments: slurm stops parsing
+# #SBATCH lines after the first plain comment line, so a directive placed
+# lower is silently ignored (ReqNodeList=(null) on jobs 1866980/1867864).
+# computg4 has no passwd entry for uid 1175 -> singularity aborts there;
+# computg9 verified fine, so only computg4 is excluded.
+#SBATCH --exclude=computg4
 #
 # Trial run: 5 complete human IP/Input pairs (2 groups), see
 # Scripts/config.trial.yaml. Adjust resources to the current free hole.

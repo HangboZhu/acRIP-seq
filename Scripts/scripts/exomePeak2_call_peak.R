@@ -4,8 +4,9 @@
 # exomePeak2 peak calling for acRIP-seq
 #
 # OpenAc4C unified acRIP-seq pipeline:
-#   - joint peak calling when biological replicates are present
-#     (all replicate BAMs are passed together as vectors)
+#   - one exomePeak2 call per IP/Input pair (peak_pairing: per_replicate,
+#     the default: each replicate's IP against its own Input); passing
+#     several replicates as vectors gives joint peak calling (per_pair)
 #   - GC content bias correction (enabled whenever `genome` is provided)
 #   - unified peak calling cut-off P < 1e-10
 #

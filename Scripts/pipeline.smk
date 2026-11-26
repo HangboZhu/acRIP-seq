@@ -37,17 +37,20 @@ MULTIQC_DIR = OUTPUT_DIR / "multiqc"
 REPORT_DIR = OUTPUT_DIR / "report"
 REPORT_DATA_DIR = REPORT_DIR / "data"
 REPORT_FIG_DIR = REPORT_DIR / "figures"
+CONSENSUS_DIR = OUTPUT_DIR / "consensus"
 LOG_DIR = OUTPUT_DIR / "logs"
 
 for dir_path in [QC_DIR, TRIM_DIR, BAM_DIR, MOTIF_DIR, SCANMOTIF_DIR,
-                 MULTIQC_DIR, REPORT_DIR, REPORT_DATA_DIR, REPORT_FIG_DIR, LOG_DIR]:
+                 MULTIQC_DIR, REPORT_DIR, REPORT_DATA_DIR, REPORT_FIG_DIR,
+                 CONSENSUS_DIR, LOG_DIR]:
     dir_path.mkdir(parents=True, exist_ok=True)
 
 
 # ---------------------------------------------------------------------------
-# Parse sample groups.  A group may contain multiple biological replicates;
-# all replicate BAMs of a group are passed together to exomePeak2 for joint
-# peak calling (OpenAc4C unified acRIP-seq pipeline).
+# Parse sample groups.  A group may contain multiple biological replicates.
+# How those replicates reach exomePeak2 is set by `peak_pairing` further down:
+# per_replicate (default) = one call per replicate (1 IP + 1 Input),
+# per_pair = one joint call over all replicate BAMs.
 #
 # Each replicate may be single-end (1 FASTQ) or paired-end (R1 + R2).
 # Accepted per-group FASTQ fields:
@@ -184,6 +187,106 @@ PAIR_NAMES = [p["pair_name"] for p in SAMPLE_PAIRS]
 PAIR_INFO = {p["pair_name"]: p for p in SAMPLE_PAIRS}
 ALL_SAMPLES = list(SAMPLE_FASTQ.keys())
 
+# ------------------------------------------------------------
+# Peak-calling granularity  (config: peak_pairing)
+# ------------------------------------------------------------
+# A "sample_pairs" entry groups a biology: N IP replicates + N Input
+# replicates. How many exomePeak2 runs that becomes is controlled here:
+#
+#   per_replicate (default)  one run per replicate, IP and Input paired by
+#                            POSITION inside the group:
+#                              ip_samples[0] vs input_samples[0]
+#                              ip_samples[1] vs input_samples[1]  ...
+#                            This is how pi-OmicsKit / OpenAc4C call peaks
+#                            (exactly 1 IP + 1 Input per exomePeak2 call),
+#                            so every peak set has a single, unambiguous
+#                            IP/Input pair behind it.
+#   per_pair                 one joint run over ALL IP reps vs ALL Input
+#                            reps (exomePeak2 joint peak calling).
+#
+# Each run gets a peak-group id used as the {peak} wildcard and as the
+# exomePeak2_output_<id> suffix. In per_pair mode the id equals the
+# pair_name, so existing output paths are preserved.
+PEAK_PAIRING = str(config.get("peak_pairing", "per_replicate")).lower()
+if PEAK_PAIRING not in ("per_replicate", "per_pair"):
+    raise ValueError(
+        f"peak_pairing must be 'per_replicate' or 'per_pair', got {PEAK_PAIRING!r}"
+    )
+
+PEAK_GROUPS = []
+for pair in SAMPLE_PAIRS:
+    ip_list = list(pair["ip_samples"])
+    input_list = list(pair["input_samples"])
+
+    if PEAK_PAIRING == "per_pair":
+        PEAK_GROUPS.append({
+            "peak_id": pair["pair_name"],
+            "pair_name": pair["pair_name"],
+            "replicate": 0,
+            "ip_samples": ip_list,
+            "input_samples": input_list,
+        })
+        continue
+
+    if not ip_list:
+        raise ValueError(
+            f"pair '{pair['pair_name']}': per_replicate peak calling needs ip_samples"
+        )
+    if not input_list:
+        raise ValueError(
+            f"pair '{pair['pair_name']}': per_replicate peak calling needs "
+            f"input_samples (each IP is compared against its own Input)"
+        )
+    if len(ip_list) != len(input_list):
+        raise ValueError(
+            f"pair '{pair['pair_name']}': per_replicate peak calling pairs IP and "
+            f"Input BY POSITION, so both lists must have the same length "
+            f"(got {len(ip_list)} IP vs {len(input_list)} Input). "
+            f"Fix the config, or set `peak_pairing: per_pair` to call peaks "
+            f"jointly across replicates."
+        )
+
+    for rep, (ip_name, input_name) in enumerate(zip(ip_list, input_list), start=1):
+        PEAK_GROUPS.append({
+            "peak_id": f"{pair['pair_name']}_rep{rep}",
+            "pair_name": pair["pair_name"],
+            "replicate": rep,
+            "ip_samples": [ip_name],
+            "input_samples": [input_name],
+        })
+
+PEAK_IDS = [g["peak_id"] for g in PEAK_GROUPS]
+PEAK_INFO = {g["peak_id"]: g for g in PEAK_GROUPS}
+if len(set(PEAK_IDS)) != len(PEAK_IDS):
+    _dupes = sorted({x for x in PEAK_IDS if PEAK_IDS.count(x) > 1})
+    raise ValueError(f"duplicate peak-group ids: {', '.join(_dupes)}")
+
+# Peak groups of each sample_pairs entry, in replicate order. Used by the
+# majority-vote consensus step.
+PAIR_PEAK_IDS = {p["pair_name"]: [] for p in SAMPLE_PAIRS}
+for _g in PEAK_GROUPS:
+    PAIR_PEAK_IDS[_g["pair_name"]].append(_g["peak_id"])
+
+# ------------------------------------------------------------
+# Cross-replicate consensus peaks (majority vote)
+# ------------------------------------------------------------
+# per_replicate peak calling produces one list per replicate, so a group has no
+# single answer to "how many ac4C peaks does it have". The consensus rules
+# merge the replicate lists, count how many replicates support each region
+# (>= consensus_min_overlap of it covered), and keep regions supported by at
+# least `consensus_min_support` replicates ("majority" = floor(N/2)+1).
+# Groups with a single replicate are passed through unchanged.
+CONSENSUS_PEAKS = config.get("consensus_peaks", True)
+CONSENSUS_MIN_SUPPORT = config.get("consensus_min_support", "majority")
+CONSENSUS_MIN_OVERLAP = float(config.get("consensus_min_overlap", 0.5))
+
+
+def consensus_min_support_for(pair_name):
+    n_reps = len(PAIR_PEAK_IDS[pair_name])
+    if str(CONSENSUS_MIN_SUPPORT).lower() == "majority":
+        return n_reps // 2 + 1
+    return int(CONSENSUS_MIN_SUPPORT)
+
 # Trimmed FASTQ paths produced by the SE / PE trim rules
 TRIMMED_FASTQ = {}
 for _sample in ALL_SAMPLES:
@@ -212,10 +315,11 @@ MAPQ_FILTER = config.get("mapq_filter", 255)
 REQUIRE_PROPER_PAIR = config.get("require_proper_pair", True)
 
 
-def csv_bam_paths(wildcards, role):
+def peak_bam_paths(wildcards, role):
+    """Comma-separated DeDup BAMs of one peak group (IP or Input side)."""
     return ",".join(
         str(BAM_DIR / f"{sample}.DeDup.bam")
-        for sample in PAIR_INFO[wildcards.pair][f"{role}_samples"]
+        for sample in PEAK_INFO[wildcards.peak][f"{role}_samples"]
     )
 
 
@@ -229,19 +333,23 @@ rule all:
         [BAM_DIR / f"{s}.DeDup.log" for s in ALL_SAMPLES],
         # MultiQC report (single, across all samples)
         MULTIQC_DIR / "multiqc_report.html",
-        # Per-group joint peak calling
-        expand(OUTPUT_DIR / "exomePeak2_output_{pair}" / "peaks.bed", pair=PAIR_NAMES) if not config.get("skip_peak", False) else [],
+        # Peak calling: one exomePeak2 run per peak group (1 IP + 1 Input when
+        # peak_pairing == "per_replicate")
+        OUTPUT_DIR / "peak_groups.tsv" if not config.get("skip_peak", False) else [],
+        expand(OUTPUT_DIR / "exomePeak2_output_{peak}" / "peaks.bed", peak=PEAK_IDS) if not config.get("skip_peak", False) else [],
         # Optional liftOver harmonization
-        expand(OUTPUT_DIR / "exomePeak2_output_{pair}" / "peaks.lifted.bed", pair=PAIR_NAMES) if config.get("liftover", False) else [],
-        # Merge enriched peaks across all sample groups
+        expand(OUTPUT_DIR / "exomePeak2_output_{peak}" / "peaks.lifted.bed", peak=PEAK_IDS) if config.get("liftover", False) else [],
+        # Merge enriched peaks across all peak groups
         OUTPUT_DIR / "acRIP_all_peaks.bed" if not config.get("skip_peak", False) else [],
-        # Per-pair motif analysis (off by default for acRIP-seq)
-        expand(MOTIF_DIR / "streme_{pair}.html", pair=PAIR_NAMES) if not config.get("skip_peak", False) and not config.get("skip_motif", False) else [],
-        expand(MOTIF_DIR / "peak_{pair}.fa", pair=PAIR_NAMES) if not config.get("skip_peak", False) and not config.get("skip_motif", False) else [],
-        # Per-pair scan motif
-        expand(SCANMOTIF_DIR / "fimo_{pair}.tsv", pair=PAIR_NAMES) if not config.get("skip_motif", False) else [],
-        expand(SCANMOTIF_DIR / "fimo_{pair}.html", pair=PAIR_NAMES) if not config.get("skip_motif", False) else [],
-        expand(SCANMOTIF_DIR / "fimo_{pair}_motif.bed", pair=PAIR_NAMES) if not config.get("skip_motif", False) else [],
+        # Majority-vote consensus peaks per sample group
+        CONSENSUS_DIR / "consensus_summary.tsv" if not config.get("skip_peak", False) and CONSENSUS_PEAKS else [],
+        # Per-peak-group motif analysis (off by default for acRIP-seq)
+        expand(MOTIF_DIR / "streme_{peak}.html", peak=PEAK_IDS) if not config.get("skip_peak", False) and not config.get("skip_motif", False) else [],
+        expand(MOTIF_DIR / "peak_{peak}.fa", peak=PEAK_IDS) if not config.get("skip_peak", False) and not config.get("skip_motif", False) else [],
+        # Per-peak-group scan motif
+        expand(SCANMOTIF_DIR / "fimo_{peak}.tsv", peak=PEAK_IDS) if not config.get("skip_motif", False) else [],
+        expand(SCANMOTIF_DIR / "fimo_{peak}.html", peak=PEAK_IDS) if not config.get("skip_motif", False) else [],
+        expand(SCANMOTIF_DIR / "fimo_{peak}_motif.bed", peak=PEAK_IDS) if not config.get("skip_motif", False) else [],
         # Unified report
         REPORT_DIR / "acRIP_Analysis_Report_CN.html",
         REPORT_DIR / "acRIP_Analysis_Report_EN.html"
@@ -407,18 +515,39 @@ rule mark_duplicates:
         cat {output.log} > {log}
         """
 
+rule peak_groups_manifest:
+    """Write the peak_id -> IP/Input sample map, so every peak set can be
+    traced back to exactly which two samples produced it."""
+    output:
+        manifest = OUTPUT_DIR / "peak_groups.tsv"
+    run:
+        import pathlib
+        pathlib.Path(str(output.manifest)).parent.mkdir(parents=True, exist_ok=True)
+        with open(str(output.manifest), "w") as fh:
+            fh.write(f"# peak_pairing: {PEAK_PAIRING}\n")
+            fh.write("peak_id\tpair_name\treplicate\tip_sample\tinput_sample\n")
+            for g in PEAK_GROUPS:
+                fh.write("\t".join([
+                    g["peak_id"],
+                    g["pair_name"],
+                    str(g["replicate"]),
+                    ",".join(g["ip_samples"]),
+                    ",".join(g["input_samples"]),
+                ]) + "\n")
+
+
 rule peak_calling:
     input:
-        ip_bams = lambda wildcards: [BAM_DIR / f"{s}.DeDup.bam" for s in PAIR_INFO[wildcards.pair]["ip_samples"]],
-        input_bams = lambda wildcards: [BAM_DIR / f"{s}.DeDup.bam" for s in PAIR_INFO[wildcards.pair]["input_samples"]],
+        ip_bams = lambda wildcards: [BAM_DIR / f"{s}.DeDup.bam" for s in PEAK_INFO[wildcards.peak]["ip_samples"]],
+        input_bams = lambda wildcards: [BAM_DIR / f"{s}.DeDup.bam" for s in PEAK_INFO[wildcards.peak]["input_samples"]],
         gtf_file = GTF
     output:
-        peak_bed = OUTPUT_DIR / "exomePeak2_output_{pair}" / "peaks.bed"
+        peak_bed = OUTPUT_DIR / "exomePeak2_output_{peak}" / "peaks.bed"
     log:
-        LOG_DIR / "peak_calling" / "{pair}.log"
+        LOG_DIR / "peak_calling" / "{peak}.log"
     params:
-        ip_bams = lambda wildcards: csv_bam_paths(wildcards, "ip"),
-        input_bams = lambda wildcards: csv_bam_paths(wildcards, "input"),
+        ip_bams = lambda wildcards: peak_bam_paths(wildcards, "ip"),
+        input_bams = lambda wildcards: peak_bam_paths(wildcards, "input"),
         genome_version = config.get("genome", "hg38"),
         threads = config.get("threads", 20),
         p_cutoff = config.get("p_cutoff", 1e-10),
@@ -428,9 +557,9 @@ rule peak_calling:
         step_size = config.get("step_size", 25),
         layout = lambda wildcards: (
             "pe"
-            if all(SAMPLE_LAYOUT[s] == "pe" for s in PAIR_INFO[wildcards.pair]["ip_samples"] + PAIR_INFO[wildcards.pair]["input_samples"])
+            if all(SAMPLE_LAYOUT[s] == "pe" for s in PEAK_INFO[wildcards.peak]["ip_samples"] + PEAK_INFO[wildcards.peak]["input_samples"])
             else "se"
-            if all(SAMPLE_LAYOUT[s] == "se" for s in PAIR_INFO[wildcards.pair]["ip_samples"] + PAIR_INFO[wildcards.pair]["input_samples"])
+            if all(SAMPLE_LAYOUT[s] == "se" for s in PEAK_INFO[wildcards.peak]["ip_samples"] + PEAK_INFO[wildcards.peak]["input_samples"])
             else "mixed"
         )
     resources:
@@ -460,7 +589,7 @@ rule peak_calling:
             : > {output.peak_bed}
         fi
         if [ -f ./exomePeak2_result.rds ]; then
-            mv ./exomePeak2_result.rds {OUTPUT_DIR}/exomePeak2_output_{wildcards.pair}/exomePeak2_result.rds
+            mv ./exomePeak2_result.rds {OUTPUT_DIR}/exomePeak2_output_{wildcards.peak}/exomePeak2_result.rds
         fi
         rm -rf $TMPDIR
         """
@@ -468,13 +597,13 @@ rule peak_calling:
 if config.get("liftover", False):
     rule liftover_peaks:
         input:
-            peak_bed = OUTPUT_DIR / "exomePeak2_output_{pair}" / "peaks.bed",
+            peak_bed = OUTPUT_DIR / "exomePeak2_output_{peak}" / "peaks.bed",
             chain = resolve_path(config["liftover_chain"])
         output:
-            lifted_bed = OUTPUT_DIR / "exomePeak2_output_{pair}" / "peaks.lifted.bed",
-            unmapped_bed = OUTPUT_DIR / "exomePeak2_output_{pair}" / "peaks.unmapped.bed"
+            lifted_bed = OUTPUT_DIR / "exomePeak2_output_{peak}" / "peaks.lifted.bed",
+            unmapped_bed = OUTPUT_DIR / "exomePeak2_output_{peak}" / "peaks.unmapped.bed"
         log:
-            LOG_DIR / "liftover" / "{pair}.log"
+            LOG_DIR / "liftover" / "{peak}.log"
         container: SIF
         shell:
             """
@@ -484,7 +613,7 @@ if config.get("liftover", False):
 
 rule merge_peaks:
     input:
-        peaks = expand(OUTPUT_DIR / "exomePeak2_output_{pair}" / "peaks.bed", pair=PAIR_NAMES)
+        peaks = expand(OUTPUT_DIR / "exomePeak2_output_{peak}" / "peaks.bed", peak=PEAK_IDS)
     output:
         merged = OUTPUT_DIR / "acRIP_all_peaks.bed"
     log:
@@ -496,15 +625,63 @@ rule merge_peaks:
         cat {input.peaks} | sort -k1,1 -k2,2n > {output.merged} 2> {log}
         """
 
+if CONSENSUS_PEAKS:
+    rule peak_consensus:
+        """Majority vote across the replicates of one sample group."""
+        input:
+            peaks = lambda wildcards: [
+                OUTPUT_DIR / f"exomePeak2_output_{pid}" / "peaks.bed"
+                for pid in PAIR_PEAK_IDS[wildcards.pair]
+            ]
+        output:
+            bed = CONSENSUS_DIR / "{pair}_consensus_peaks.bed",
+            stats = CONSENSUS_DIR / "{pair}_peak_support.txt"
+        log:
+            LOG_DIR / "peak_consensus" / "{pair}.log"
+        params:
+            rep_names = lambda wildcards: [
+                ",".join(PEAK_INFO[pid]["ip_samples"]) for pid in PAIR_PEAK_IDS[wildcards.pair]
+            ],
+            min_support = lambda wildcards: consensus_min_support_for(wildcards.pair),
+            min_overlap = CONSENSUS_MIN_OVERLAP,
+            outdir = CONSENSUS_DIR
+        container: SIF
+        shell:
+            """
+            mkdir -p {params.outdir} {LOG_DIR}/peak_consensus
+            python {workflow.basedir}/scripts/consensus_peaks.py \
+                --pair-name "{wildcards.pair}" \
+                --peaks {input.peaks} \
+                --rep-names {params.rep_names} \
+                --min-support {params.min_support} \
+                --min-overlap {params.min_overlap} \
+                --out-bed {output.bed} \
+                --out-stats {output.stats} 2> {log}
+            """
+
+    rule consensus_summary:
+        input:
+            stats = expand(CONSENSUS_DIR / "{pair}_peak_support.txt", pair=PAIR_NAMES)
+        output:
+            summary = CONSENSUS_DIR / "consensus_summary.tsv"
+        log:
+            LOG_DIR / "consensus_summary.log"
+        container: SIF
+        shell:
+            """
+            mkdir -p {LOG_DIR}
+            awk 'FNR==1 && NR!=1 {{next}} 1' {input.stats} > {output.summary} 2> {log}
+            """
+
 rule motif_analysis:
     input:
-        peak_bed = OUTPUT_DIR / "exomePeak2_output_{pair}" / "peaks.bed"
+        peak_bed = OUTPUT_DIR / "exomePeak2_output_{peak}" / "peaks.bed"
     output:
-        streme_html = MOTIF_DIR / "streme_{pair}.html",
-        peak_fa = MOTIF_DIR / "peak_{pair}.fa",
-        bed6_peak = MOTIF_DIR / "bed6_peak_{pair}.bed"
+        streme_html = MOTIF_DIR / "streme_{peak}.html",
+        peak_fa = MOTIF_DIR / "peak_{peak}.fa",
+        bed6_peak = MOTIF_DIR / "bed6_peak_{peak}.bed"
     log:
-        LOG_DIR / "motif_analysis" / "{pair}.log"
+        LOG_DIR / "motif_analysis" / "{peak}.log"
     params:
         genome_fasta = GENOME_FASTA,
         outdir = MOTIF_DIR
@@ -540,15 +717,15 @@ rule motif_analysis:
 
 rule scanmotif_analysis:
     input:
-        peak_fa = MOTIF_DIR / "peak_{pair}.fa",
-        bed6_peak = MOTIF_DIR / "bed6_peak_{pair}.bed",
+        peak_fa = MOTIF_DIR / "peak_{peak}.fa",
+        bed6_peak = MOTIF_DIR / "bed6_peak_{peak}.bed",
         motif_meme = SCAN_MOTIF
     output:
-        fimo_result = SCANMOTIF_DIR / "fimo_{pair}.tsv",
-        fimo_html = SCANMOTIF_DIR / "fimo_{pair}.html",
-        fimo_bed = SCANMOTIF_DIR / "fimo_{pair}_motif.bed"
+        fimo_result = SCANMOTIF_DIR / "fimo_{peak}.tsv",
+        fimo_html = SCANMOTIF_DIR / "fimo_{peak}.html",
+        fimo_bed = SCANMOTIF_DIR / "fimo_{peak}_motif.bed"
     log:
-        LOG_DIR / "scanmotif_analysis" / "{pair}.log"
+        LOG_DIR / "scanmotif_analysis" / "{peak}.log"
     params:
         scan_motif_pvalue = config.get("scan_motif_pvalue", 0.01),
         outdir = SCANMOTIF_DIR
@@ -600,22 +777,22 @@ rule collect_statistics:
         flagstat = [BAM_DIR / f"{s}.flagstat.txt" for s in ALL_SAMPLES],
         star_logs = [BAM_DIR / f"{s}.STAR.log" for s in ALL_SAMPLES],
         trim_logs = trim_log_targets(),
-        peaks = OUTPUT_DIR / "exomePeak2_output_{pair}" / "peaks.bed" if not config.get("skip_peak", False) else [],
-        bed6_peak = MOTIF_DIR / "bed6_peak_{pair}.bed" if not config.get("skip_peak", False) and not config.get("skip_motif", False) else [],
-        fimo_result = SCANMOTIF_DIR / "fimo_{pair}.tsv" if not config.get("skip_motif", False) else [],
-        fimo_bed = SCANMOTIF_DIR / "fimo_{pair}_motif.bed" if not config.get("skip_motif", False) else []
+        peaks = OUTPUT_DIR / "exomePeak2_output_{peak}" / "peaks.bed" if not config.get("skip_peak", False) else [],
+        bed6_peak = MOTIF_DIR / "bed6_peak_{peak}.bed" if not config.get("skip_peak", False) and not config.get("skip_motif", False) else [],
+        fimo_result = SCANMOTIF_DIR / "fimo_{peak}.tsv" if not config.get("skip_motif", False) else [],
+        fimo_bed = SCANMOTIF_DIR / "fimo_{peak}_motif.bed" if not config.get("skip_motif", False) else []
     output:
-        json = REPORT_DATA_DIR / "statistics_{pair}.json"
+        json = REPORT_DATA_DIR / "statistics_{peak}.json"
     log:
-        LOG_DIR / "collect_statistics" / "{pair}.log"
+        LOG_DIR / "collect_statistics" / "{peak}.log"
     params:
         workdir = OUTPUT_DIR,
-        ip_sample = lambda wildcards: ",".join(PAIR_INFO[wildcards.pair]["ip_samples"]),
-        input_sample = lambda wildcards: ",".join(PAIR_INFO[wildcards.pair]["input_samples"]),
-        peak_bed = lambda wildcards: OUTPUT_DIR / f"exomePeak2_output_{wildcards.pair}" / "peaks.bed",
-        bed6_peak = lambda wildcards: MOTIF_DIR / f"bed6_peak_{wildcards.pair}.bed",
-        fimo_result = lambda wildcards: SCANMOTIF_DIR / f"fimo_{wildcards.pair}.tsv",
-        fimo_bed = lambda wildcards: SCANMOTIF_DIR / f"fimo_{wildcards.pair}_motif.bed"
+        ip_sample = lambda wildcards: ",".join(PEAK_INFO[wildcards.peak]["ip_samples"]),
+        input_sample = lambda wildcards: ",".join(PEAK_INFO[wildcards.peak]["input_samples"]),
+        peak_bed = lambda wildcards: OUTPUT_DIR / f"exomePeak2_output_{wildcards.peak}" / "peaks.bed",
+        bed6_peak = lambda wildcards: MOTIF_DIR / f"bed6_peak_{wildcards.peak}.bed",
+        fimo_result = lambda wildcards: SCANMOTIF_DIR / f"fimo_{wildcards.peak}.tsv",
+        fimo_bed = lambda wildcards: SCANMOTIF_DIR / f"fimo_{wildcards.peak}_motif.bed"
     container: SIF
     shell:
         """
@@ -633,18 +810,18 @@ rule collect_statistics:
 
 rule generate_report_figures:
     input:
-        json = REPORT_DATA_DIR / "statistics_{pair}.json"
+        json = REPORT_DATA_DIR / "statistics_{peak}.json"
     output:
-        reads_plot = REPORT_FIG_DIR / "{pair}_reads_statistics.png",
-        mapping_plot = REPORT_FIG_DIR / "{pair}_mapping_rate.png",
-        peak_plot = REPORT_FIG_DIR / "{pair}_peak_counts.png",
-        motif_pie = REPORT_FIG_DIR / "{pair}_m6a_motif_pie.png"
+        reads_plot = REPORT_FIG_DIR / "{peak}_reads_statistics.png",
+        mapping_plot = REPORT_FIG_DIR / "{peak}_mapping_rate.png",
+        peak_plot = REPORT_FIG_DIR / "{peak}_peak_counts.png",
+        motif_pie = REPORT_FIG_DIR / "{peak}_m6a_motif_pie.png"
     log:
-        LOG_DIR / "generate_report_figures" / "{pair}.log"
+        LOG_DIR / "generate_report_figures" / "{peak}.log"
     params:
         workdir = OUTPUT_DIR,
-        ip_sample = lambda wildcards: ",".join(PAIR_INFO[wildcards.pair]["ip_samples"]),
-        prefix = lambda wildcards: wildcards.pair
+        ip_sample = lambda wildcards: ",".join(PEAK_INFO[wildcards.peak]["ip_samples"]),
+        prefix = lambda wildcards: wildcards.peak
     container: SIF
     shell:
         """
@@ -659,21 +836,21 @@ rule generate_report_figures:
 
 rule compile_report:
     input:
-        json = REPORT_DATA_DIR / "statistics_{pair}.json",
-        reads_plot = REPORT_FIG_DIR / "{pair}_reads_statistics.png",
-        mapping_plot = REPORT_FIG_DIR / "{pair}_mapping_rate.png",
-        peak_plot = REPORT_FIG_DIR / "{pair}_peak_counts.png",
-        motif_pie = REPORT_FIG_DIR / "{pair}_m6a_motif_pie.png",
+        json = REPORT_DATA_DIR / "statistics_{peak}.json",
+        reads_plot = REPORT_FIG_DIR / "{peak}_reads_statistics.png",
+        mapping_plot = REPORT_FIG_DIR / "{peak}_mapping_rate.png",
+        peak_plot = REPORT_FIG_DIR / "{peak}_peak_counts.png",
+        motif_pie = REPORT_FIG_DIR / "{peak}_m6a_motif_pie.png",
         multiqc = MULTIQC_DIR / "multiqc_report.html"
     output:
-        html_report = REPORT_DIR / "acRIP_Analysis_Report_{pair}.html",
-        html_report_en = REPORT_DIR / "acRIP_Analysis_Report_{pair}_EN.html"
+        html_report = REPORT_DIR / "acRIP_Analysis_Report_{peak}.html",
+        html_report_en = REPORT_DIR / "acRIP_Analysis_Report_{peak}_EN.html"
     log:
-        LOG_DIR / "compile_report" / "{pair}.log"
+        LOG_DIR / "compile_report" / "{peak}.log"
     params:
         workdir = OUTPUT_DIR,
-        ip_sample = lambda wildcards: ",".join(PAIR_INFO[wildcards.pair]["ip_samples"]),
-        input_sample = lambda wildcards: ",".join(PAIR_INFO[wildcards.pair]["input_samples"]),
+        ip_sample = lambda wildcards: ",".join(PEAK_INFO[wildcards.peak]["ip_samples"]),
+        input_sample = lambda wildcards: ",".join(PEAK_INFO[wildcards.peak]["input_samples"]),
         genome = GENOME,
         report_title = "acRIP-seq Analysis Report",
         report_subtitle = "ac4C RNA Immunoprecipitation sequencing Analysis Report",
@@ -714,7 +891,7 @@ rule compile_report:
 
 rule collect_all_statistics:
     input:
-        jsons = expand(REPORT_DATA_DIR / "statistics_{pair}.json", pair=PAIR_NAMES)
+        jsons = expand(REPORT_DATA_DIR / "statistics_{peak}.json", peak=PEAK_IDS)
     output:
         json = REPORT_DATA_DIR / "statistics_all.json"
     log:
@@ -752,8 +929,8 @@ rule compile_unified_report:
         json = REPORT_DATA_DIR / "statistics_all.json",
         reads_plot = REPORT_FIG_DIR / "all_reads_statistics.png",
         mapping_plot = REPORT_FIG_DIR / "all_mapping_rate.png",
-        pair_peak_plots = expand(REPORT_FIG_DIR / "{pair}_peak_counts.png", pair=PAIR_NAMES),
-        pair_motif_pies = expand(REPORT_FIG_DIR / "{pair}_m6a_motif_pie.png", pair=PAIR_NAMES),
+        pair_peak_plots = expand(REPORT_FIG_DIR / "{peak}_peak_counts.png", peak=PEAK_IDS),
+        pair_motif_pies = expand(REPORT_FIG_DIR / "{peak}_m6a_motif_pie.png", peak=PEAK_IDS),
         multiqc = MULTIQC_DIR / "multiqc_report.html"
     output:
         html_report = REPORT_DIR / "acRIP_Analysis_Report_CN.html",
@@ -771,7 +948,7 @@ rule compile_unified_report:
         company_name = "pi-omicskit Bioinformatics",
         project_id = f"acRIP{datetime.now().strftime('%Y')}",
         scan_motif_pvalue = SCAN_MOTIF_PVALUE,
-        pair_names = ",".join(PAIR_NAMES)
+        pair_names = ",".join(PEAK_IDS)
     container: SIF
     shell:
         """

@@ -10,11 +10,13 @@
 # ------------------------------------------------------------
 # sample_pairs
 # ------------------------------------------------------------
-# One entry = one acRIP comparison group used for ONE exomePeak2 call.
-# For biological replicates, list every replicate in ip_samples /
-# input_samples and give the FASTQ files in exactly the same order.
-# exomePeak2 then performs JOINT peak calling across all replicates
-# in the group (bam_ip is a vector), as described in OpenAc4C.
+# One entry = one biological question (an IP group vs its Input group).
+# List every replicate in ip_samples / input_samples and give the FASTQ
+# files in exactly the same order. How many exomePeak2 calls this entry
+# becomes is set by `peak_pairing` below:
+#   per_replicate (default): ip_samples[i] vs input_samples[i], i.e. one
+#       call per replicate with exactly 1 IP + 1 Input (pi-OmicsKit style).
+#   per_pair: one JOINT call over all IP reps vs all Input reps.
 #
 # Each sample may be single-end (1 FASTQ) or paired-end (R1 + R2).
 # Provide one entry per sample:
@@ -44,6 +46,16 @@ sample_pairs:
     input_fastq:
       - ["Test_Files/acRIP-input_test1_R1.fastq.gz", "Test_Files/acRIP-input_test1_R2.fastq.gz"]
       - ["Test_Files/acRIP-input_test2_R1.fastq.gz", "Test_Files/acRIP-input_test2_R2.fastq.gz"]
+
+# ------------------------------------------------------------
+# Peak-calling granularity
+# ------------------------------------------------------------
+# per_replicate: one exomePeak2 call per replicate -> ip_samples[i] vs
+#                input_samples[i]  (1 IP + 1 Input per call, as pi-OmicsKit
+#                and OpenAc4C do). Output dir: exomePeak2_output_<pair>_rep<N>
+# per_pair:      one joint call over all IP reps vs all Input reps
+#                (exomePeak2 joint peak calling). Output: exomePeak2_output_<pair>
+peak_pairing: "per_replicate"
 
 # ------------------------------------------------------------
 # Output
@@ -106,6 +118,20 @@ require_proper_pair: True
 # ------------------------------------------------------------
 # The OpenAc4C acRIP-seq pipeline does not include motif analysis,
 # and DRACH is an m6A motif (not applicable to ac4C), so it is off.
+# Cross-replicate consensus peaks (majority vote).
+# per_replicate peak calling gives one list per replicate; this step merges them
+# and keeps regions supported by at least `consensus_min_support` replicates.
+#   consensus_min_support: "majority" (= floor(N/2)+1) or an integer, e.g. 2
+#   consensus_min_overlap: a replicate counts as supporting a region when its
+#                          peak covers at least this fraction of it
+# Outputs (per sample group):
+#   consensus/<pair>_consensus_peaks.bed   BED6 + support count in column 5
+#   consensus/<pair>_peak_support.txt      per-group vote summary
+#   consensus/consensus_summary.tsv        all groups
+consensus_peaks: True
+consensus_min_support: "majority"
+consensus_min_overlap: 0.5
+
 skip_peak: False
 skip_motif: True
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=zhacRIP-dryrun
-#SBATCH --partition=c128m1T,vmcore128,corexd192
+#SBATCH --partition=c128m1T,vmcore128,corexd192,core56
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1

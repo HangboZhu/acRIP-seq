@@ -32,3 +32,6 @@ logs/
 samtools.*.tmp.*.bam
 # sbatch spool 泄漏进 Scripts/species/ 的作业副本
 Scripts/species/*.idxjob
+
+# 本机专用运行配置（含内网路径），不进公开仓库
+Scripts/zhuhb_run/

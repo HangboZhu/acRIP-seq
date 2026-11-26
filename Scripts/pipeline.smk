@@ -274,16 +274,22 @@ for _g in PEAK_GROUPS:
 # single answer to "how many ac4C peaks does it have". The consensus rules
 # merge the replicate lists, count how many replicates support each region
 # (>= consensus_min_overlap of it covered), and keep regions supported by at
-# least `consensus_min_support` replicates ("majority" = floor(N/2)+1).
+# least `consensus_min_support` replicates:
+#   "all"      strict intersection - every replicate must support the region
+#   "majority" floor(N/2)+1 replicates
+#   <int>      that many replicates
 # Groups with a single replicate are passed through unchanged.
 CONSENSUS_PEAKS = config.get("consensus_peaks", True)
-CONSENSUS_MIN_SUPPORT = config.get("consensus_min_support", "majority")
+CONSENSUS_MIN_SUPPORT = config.get("consensus_min_support", "all")
 CONSENSUS_MIN_OVERLAP = float(config.get("consensus_min_overlap", 0.5))
 
 
 def consensus_min_support_for(pair_name):
     n_reps = len(PAIR_PEAK_IDS[pair_name])
-    if str(CONSENSUS_MIN_SUPPORT).lower() == "majority":
+    mode = str(CONSENSUS_MIN_SUPPORT).strip().lower()
+    if mode == "all":
+        return n_reps
+    if mode == "majority":
         return n_reps // 2 + 1
     return int(CONSENSUS_MIN_SUPPORT)
 

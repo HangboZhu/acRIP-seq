@@ -118,10 +118,12 @@ require_proper_pair: True
 # ------------------------------------------------------------
 # The OpenAc4C acRIP-seq pipeline does not include motif analysis,
 # and DRACH is an m6A motif (not applicable to ac4C), so it is off.
-# Cross-replicate consensus peaks (majority vote).
+# Cross-replicate consensus peaks (strict intersection).
 # per_replicate peak calling gives one list per replicate; this step merges them
-# and keeps regions supported by at least `consensus_min_support` replicates.
-#   consensus_min_support: "majority" (= floor(N/2)+1) or an integer, e.g. 2
+# and keeps only regions that EVERY replicate supports by default.
+#   consensus_min_support: "all" (strict intersection, default)
+#                          | "majority" (= floor(N/2)+1)
+#                          | an integer, e.g. 2
 #   consensus_min_overlap: a replicate counts as supporting a region when its
 #                          peak covers at least this fraction of it
 # Outputs (per sample group):
@@ -129,7 +131,7 @@ require_proper_pair: True
 #   consensus/<pair>_peak_support.txt      per-group vote summary
 #   consensus/consensus_summary.tsv        all groups
 consensus_peaks: True
-consensus_min_support: "majority"
+consensus_min_support: "all"
 consensus_min_overlap: 0.5
 
 skip_peak: False

@@ -15,7 +15,10 @@ Method
    overlap or touch are merged (bedtools-merge semantics).
 2. For every candidate region count the replicates that have a peak covering at
    least ``--min-overlap`` (default 0.5) of that region.
-3. Keep regions whose support is >= ``--min-support``.
+3. Keep regions whose support is >= ``--min-support``:
+   ``all``       every replicate must support it (strict intersection, safest)
+   ``majority``  floor(N/2)+1 replicates (majority vote)
+   an integer    that many replicates
 
 A replicate with a single data point is passed through unchanged (min-support
 1), so un-replicated groups behave exactly as before.
@@ -95,7 +98,8 @@ def main():
     parser.add_argument("--pair-name", required=True)
     parser.add_argument("--peaks", nargs="+", required=True, help="One peaks.bed per replicate")
     parser.add_argument("--rep-names", nargs="+", required=True, help="Replicate labels, same order as --peaks")
-    parser.add_argument("--min-support", required=True, help="Integer, or 'majority'")
+    parser.add_argument("--min-support", required=True,
+                        help="'all' (strict intersection), 'majority', or an integer")
     parser.add_argument("--min-overlap", type=float, default=0.5)
     parser.add_argument("--out-bed", required=True)
     parser.add_argument("--out-stats", required=True)
@@ -108,7 +112,10 @@ def main():
     rep_counts = [sum(len(v) for v in bed.values()) for bed in rep_beds]
     n_reps = len(rep_beds)
 
-    if str(args.min_support).lower() == "majority":
+    support_mode = str(args.min_support).strip().lower()
+    if support_mode == "all":
+        min_support = n_reps
+    elif support_mode == "majority":
         min_support = n_reps // 2 + 1
     else:
         min_support = int(args.min_support)
@@ -169,6 +176,13 @@ def main():
 
     print(f"{args.pair_name}: {n_reps} replicates -> {union_regions} union regions, "
           f"{len(kept)} consensus peaks (support >= {min_support})")
+    if not kept:
+        empty = [name for name, count in zip(args.rep_names, rep_counts) if count == 0]
+        if empty:
+            print(f"WARNING: no consensus peaks; these replicates called no peaks at "
+                  f"all, so a strict intersection is empty: {', '.join(empty)}")
+        else:
+            print("WARNING: replicates share no peak passing the overlap threshold")
 
 
 if __name__ == "__main__":

@@ -88,7 +88,7 @@ trim_galore_se          -> all, collect_statistics, multiqc, star_alignment
         ├──► merge_peaks ──► acRIP_all_peaks.bed（全部 group 的 cat+sort 并集）
         │
         ├──► peak_consensus ──► consensus/<pair>_consensus_peaks.bed
-        │        （同一 pair 的 rep1+rep2+rep3 多数投票，support>=floor(N/2)+1）
+        │        （同一 pair 的 rep1+rep2+rep3 取交集：每个 rep 都必须支持）
         │    └─► consensus/<pair>_peak_support.txt
         │         └─► consensus/consensus_summary.tsv（全部 pair 汇总）
         │
@@ -124,7 +124,20 @@ trim_galore_se          -> all, collect_statistics, multiqc, star_alignment
 | SE / PE | 仅 SE | SE + PE 自动识别 |
 | 多样本汇总 | 有（multi-pair 报告） | 有（i18n 中英文报告） |
 | merge_peaks | 无 | 有（并集，非 consensus） |
-| 跨重复 consensus | 无（上游无重复概念） | 有，多数投票 `peak_consensus` |
+| 跨重复 consensus | 无（上游无重复概念） | 有，严格取交集 `peak_consensus` |
+
+## consensus 的三种模式
+
+`consensus_min_support` 控制一条区域需要几个重复支持才保留：
+
+| 取值 | 含义 | 3 重复时 | 风险 |
+|---|---|---|---|
+| `"all"`（默认） | 严格交集，每个重复都要支持 | ≥3 | 一个弱重复会把整组 peak 清空 |
+| `"majority"` | 多数投票 | ≥2 | 允许单个重复不同 |
+| 整数（如 `2`） | 指定支持数 | ≥2 | 同 majority |
+
+`consensus_min_overlap`（默认 0.5）规定一个重复的 peak 要覆盖该区域至少多少比例才算支持。
+单重复分组一律直通（support 全为 1），不会因为取交集而丢数据。
 | liftOver | 无 | 有（默认关） |
 | bamCoverage / bigWig | 有 | 无 |
 | motif（STREME/FIMO） | 有，默认开（DRACH） | 有，默认关（DRACH 是 m6A motif） |

@@ -32,7 +32,7 @@ if [[ "${EXECUTOR:-local}" == "slurm" ]]; then
         --default-resources \
             "slurm_partition=c128m1T,vmcore128,corexd192" \
             "mem_mb=16000" \
-            "tmpdir=/hpcdisk1/apod/shijiachen/work/tmp" \
+            "tmpdir='/hpcdisk1/apod/shijiachen/work/tmp'" \
         --printshellcmds \
         --singularity-args "--cleanenv ${BIND_ARGS}" \
         "$@"

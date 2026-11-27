@@ -23,7 +23,7 @@ mkdir -p "$WORK/home" "$WORK/tmp" "$PIPE/logs"
 # /home/zhuhb is over quota -> point HOME/TMPDIR at shared storage
 export HOME="$WORK/home"
 export TMPDIR="$WORK/tmp"
-export ACRIP_CONFIG="$PIPE/Scripts/zhuhb_run/config.$SP.yaml"
+export ACRIP_CONFIG="$PIPE/Scripts/run_fixed/config.$SP.yaml"
 export PATH="/hpcdisk1/apod/shijiachen/work/conda/acrip_smk8_venv/bin:/hpcdisk1/biosoft/app1/miniforge3/envs/singularity/bin:$PATH"
 
 cd "$WORK"
@@ -36,8 +36,10 @@ exec snakemake \
     --default-resources \
         "slurm_partition=c128m1T,vmcore128,corexd192" \
         "mem_mb=16000" \
-        "tmpdir=$WORK/tmp" \
+        "runtime=180" \
+        "tmpdir='$WORK/tmp'" \
     --printshellcmds \
     --singularity-args "--cleanenv --home $WORK/home --env TMPDIR=$WORK/tmp --bind $PIPE:$PIPE,/hpcdisk1:/hpcdisk1" \
+    --nolock \
     --rerun-triggers mtime \
     "$@"

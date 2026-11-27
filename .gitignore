@@ -35,3 +35,7 @@ Scripts/species/*.idxjob
 
 # 本机专用运行配置（含内网路径），不进公开仓库
 Scripts/zhuhb_run/
+Scripts/run_fixed/
+
+# Snakemake 运行工作区（按物种分的 work dir + 元数据）
+.zhuhb_run/

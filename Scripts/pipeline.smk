@@ -463,8 +463,13 @@ rule star_alignment:
     # the 2026-11-16 22:45 run died.
     threads: config.get("threads", 8)
     # Genome load (~35G for human/mouse) + BAM sort headroom (--limitBAMsortRAM)
+    # runtime is required, not cosmetic: Slurm only backfills a low-priority job
+    # if it can finish before the higher-priority jobs' expected start. An
+    # unbounded walltime makes that impossible, so the job parks in the queue
+    # forever even with hundreds of idle cores (seen 2026-11-26).
     resources:
-        mem_mb = config.get("star_mem_mb", 96000)
+        mem_mb = config.get("star_mem_mb", 96000),
+        runtime = config.get("star_runtime_min", 480)
     params:
         ref_dir = REFERENCEDIR,
         outdir = BAM_DIR,
@@ -500,6 +505,9 @@ rule mark_duplicates:
         layout = lambda wildcards: SAMPLE_LAYOUT[wildcards.sample],
         mapq = MAPQ_FILTER,
         require_proper_pair = REQUIRE_PROPER_PAIR
+    resources:
+        mem_mb = config.get("dedup_mem_mb", 32000),
+        runtime = config.get("dedup_runtime_min", 180)
     container: SIF
     shell:
         r"""
@@ -569,7 +577,8 @@ rule peak_calling:
             else "mixed"
         )
     resources:
-        mem_mb = 48000
+        mem_mb = 48000,
+        runtime = config.get("peak_runtime_min", 240)
     container: SIF
     shell:
         """

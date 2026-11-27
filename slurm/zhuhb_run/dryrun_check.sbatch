@@ -25,19 +25,34 @@ export PATH="/hpcdisk1/apod/shijiachen/work/conda/acrip_smk8_venv/bin:$PATH"
 OUT="$PIPE/logs/dryrun_summary.txt"
 : > "$OUT"
 
+# Each species gets its own scratch directory: separate .snakemake metadata,
+# no cross-talk between configs.
 for SP in rat fly full mouse; do
+    SPWORK="$WORK/$SP"
+    rm -rf "$SPWORK"
+    mkdir -p "$SPWORK"
+
     echo "================ $SP ================" >> "$OUT"
     ACRIP_CONFIG="$PIPE/Scripts/zhuhb_run/config.$SP.yaml" \
     snakemake -s "$PIPE/Scripts/pipeline.smk" \
-        --directory "$WORK" \
+        --directory "$SPWORK" \
         --nolock \
         -n -p --cores 1 \
         --rerun-triggers mtime >> "$OUT" 2>&1
     echo "exit=$?" >> "$OUT"
 done
 
-# DAG for the smallest species (rat) and for human
-ACRIP_CONFIG="$PIPE/Scripts/zhuhb_run/config.rat.yaml" \
-snakemake -s "$PIPE/Scripts/pipeline.smk" --directory "$WORK" --nolock \
-    --dag --rerun-triggers mtime > "$PIPE/logs/dag_rat.dot" 2> "$PIPE/logs/dag_rat.err"
-echo "dag_rat exit=$?" >> "$OUT"
+# DAG for the smallest species (rat) and the largest (human)
+for SP in rat full; do
+    ACRIP_CONFIG="$PIPE/Scripts/zhuhb_run/config.$SP.yaml" \
+    snakemake -s "$PIPE/Scripts/pipeline.smk" --directory "$WORK/$SP" --nolock \
+        --dag --rerun-triggers mtime > "$PIPE/logs/dag_$SP.dot" 2> "$PIPE/logs/dag_$SP.err"
+    echo "dag_$SP exit=$?" >> "$OUT"
+done
+
+# Hard gate: the consensus rules must be present in the planned jobs.
+echo "================ checks ================" >> "$OUT"
+echo "peak_consensus_job_lines=$(grep -c '^peak_consensus  ' "$OUT")" >> "$OUT"
+echo "consensus_summary_job_lines=$(grep -c '^consensus_summary  ' "$OUT")" >> "$OUT"
+echo "n_exit_0=$(grep -c '^exit=0$' "$OUT")" >> "$OUT"
+echo "n_exit_nonzero=$(grep '^exit=' "$OUT" | grep -vc '^exit=0$')" >> "$OUT"
